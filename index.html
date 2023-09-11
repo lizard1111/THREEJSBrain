@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Boolean Test</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.124.0/build/three.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src='ThreeCSG.js'></script>
+
+<script>
+    let scene = new THREE.Scene();
+    let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    let renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    let controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+    let ambientLight = new THREE.AmbientLight(0x404040, 2);
+    scene.add(ambientLight);
+    let directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    directionalLight.position.set(1, 1, 1).normalize();
+    scene.add(directionalLight);
+
+    let cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+    let sphereGeometry = new THREE.SphereGeometry(0.6, 32, 32);
+    
+    let cubeMesh = new THREE.Mesh(cubeGeometry);
+    let sphereMesh = new THREE.Mesh(sphereGeometry);
+
+    if (cubeMesh.geometry instanceof THREE.BufferGeometry) {
+        cubeMesh.geometry = new THREE.Geometry().fromBufferGeometry(cubeMesh.geometry);
+    }
+    if (sphereMesh.geometry instanceof THREE.BufferGeometry) {
+        sphereMesh.geometry = new THREE.Geometry().fromBufferGeometry(sphereMesh.geometry);
+    }
+
+    let cubeBSP = new ThreeBSP(cubeMesh);
+    let sphereBSP = new ThreeBSP(sphereMesh);
+
+    let subtractedBSP = cubeBSP.subtract(sphereBSP);
+    let result = subtractedBSP.toMesh(new THREE.MeshLambertMaterial({ color: 0xff0000 }));
+    scene.add(result);
+
+    camera.position.set(2, 2, 3);  
+    camera.lookAt(0, 0, 0);  
+
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+    }
+
+    animate();
+</script>
+
+</body>
+</html>
